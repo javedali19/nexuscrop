@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useShell } from "./shell-context";
+import { useAuth } from "@/lib/auth/auth-context";
 import { NAVIGATION_GROUPS, hasPermission } from "@/lib/permissions";
 import { Badge } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -50,6 +51,7 @@ import {
   LayoutGrid,
   ChevronsLeft,
   Sliders,
+  LogOut,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, React.ReactNode> = {
@@ -92,6 +94,8 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const { currentRole, isMobileSidebarOpen, setIsMobileSidebarOpen, currentOrg } = useShell();
 
   const getCustomBadge = (label: string, itemBadge?: string) => {
@@ -240,9 +244,9 @@ export const Sidebar: React.FC = () => {
             })}
           </div>
 
-          {/* System Footer Row Matching Screenshot */}
-          <div className="p-3 border-t border-slate-100 bg-slate-50/50">
-            <div className="px-2 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+          {/* System Footer Row & User Sign Out */}
+          <div className="p-3 border-t border-slate-100 bg-slate-50/50 space-y-2.5">
+            <div className="px-2 pb-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
               SYSTEM
             </div>
             <div className="flex items-center justify-between px-1 text-[11px] text-slate-600 font-medium">
@@ -258,6 +262,40 @@ export const Sidebar: React.FC = () => {
                 <Settings className="h-3.5 w-3.5 text-slate-400" />
                 <span>Settings</span>
               </Link>
+            </div>
+
+            {/* User Session Bar & Sign Out */}
+            <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between px-1">
+              <div className="flex items-center space-x-2 min-w-0">
+                <div className="h-6 w-6 rounded-full bg-blue-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0">
+                  {user?.fullName
+                    ? user.fullName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2)
+                    : "AM"}
+                </div>
+                <div className="truncate text-left">
+                  <p className="text-[11px] font-semibold text-slate-800 truncate leading-tight">
+                    {user?.fullName || "Alex Morgan"}
+                  </p>
+                  <p className="text-[9px] text-slate-400 font-mono capitalize">
+                    {currentRole.replace("_", " ")}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  logout();
+                  router.push("/login");
+                }}
+                title="Sign Out"
+                className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
         </div>
